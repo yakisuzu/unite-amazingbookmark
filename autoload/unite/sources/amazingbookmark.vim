@@ -1,6 +1,11 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:vjson = vital#of("amazingbookmark").import("Web.JSON")
+let s:di_source = {
+      \ 'name' : 'amazingbookmark',
+      \ }
+
 call unite#util#set_default('g:unite_source_amazingbookmark_directory',
       \ unite#get_data_directory() . '/amazingbookmark')
 
@@ -8,27 +13,22 @@ function! unite#sources#amazingbookmark#define() "{{{
   return s:di_source
 endfunction "}}}
 
-let s:di_source = {
-      \ 'name' : 'amazingbookmark',
-      \ }
-
 function! unite#sources#amazingbookmark#get_bookmark_list(st_file) "{{{
-  let di_bookmarks = readfile(g:unite_source_amazingbookmark_directory . '/' . a:st_file)
+  let st_path = g:unite_source_amazingbookmark_directory . '/' . a:st_file
+  let di_bookmarks = s:vjson.decode(join(readfile(st_path)))
 
   " setting default value
   let di_bookmarks.bookmarks = map(di_bookmarks.bookmarks, "{
-        \ 'name' : get(v:val, name, ''),
-        \ 'url' : get(v:val, url, ''),
-        \ 'type' : get(v:val, type, 'd'),
-        \ 'disabled' : get(v:val, disabled, 0),
-        \ 'line_no' : get(v:val, line_no, 0),
-        \ "})
+        \ 'name' : get(v:val, 'name', ''),
+        \ 'url' : get(v:val, 'url', ''),
+        \ 'type' : get(v:val, 'type', 'd'),
+        \ 'disabled' : get(v:val, 'disabled', 0),
+        \ 'line_no' : get(v:val, 'line_no', 0),
+        \ }")
   return di_bookmarks
 endfunction "}}}
 
 function! s:di_source.gather_candidates(args, context) "{{{
-  "TODO debug
-  echo a:args
   if len(a:args) != 1
     echom 'support only 1 args'
     return []
