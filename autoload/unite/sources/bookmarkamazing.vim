@@ -2,18 +2,18 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:di_source = {
-      \ 'name' : 'amazingbookmark',
+      \ 'name' : 'bookmarkamazing',
       \ }
 
-call unite#util#set_default('g:unite_source_amazingbookmark_directory',
-      \ unite#get_data_directory() . '/amazingbookmark')
+call unite#util#set_default('g:unite_source_bookmarkamazing_directory',
+      \ unite#get_data_directory() . '/bookmarkamazing')
 
-function! unite#sources#amazingbookmark#define() "{{{
+function! unite#sources#bookmarkamazing#define() "{{{
   return s:di_source
 endfunction "}}}
 
-function! unite#sources#amazingbookmark#get_bookmark_list(st_file) "{{{
-  let st_path = g:unite_source_amazingbookmark_directory . '/' . a:st_file
+function! unite#sources#bookmarkamazing#get_bookmark_list(st_file) "{{{
+  let st_path = g:unite_source_bookmarkamazing_directory . '/' . a:st_file
   if empty(glob(st_path))
     echom 'file not found ' . st_path
     return []
@@ -74,7 +74,7 @@ function! s:di_source.gather_candidates(args, context) "{{{
     return []
   endif
 
-  let li_bookmarks = unite#sources#amazingbookmark#get_bookmark_list(a:args[0])
+  let li_bookmarks = unite#sources#bookmarkamazing#get_bookmark_list(a:args[0])
 
   let li_candidates = []
   for di_book in li_bookmarks
