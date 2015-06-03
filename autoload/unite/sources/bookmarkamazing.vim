@@ -80,20 +80,19 @@ function! s:di_source.gather_candidates(args, context) "{{{
   for di_book in li_bookmarks
     let di_line = {}
 
+    let st_type = empty(di_book.type) ? '' : '[' . di_book.type . ']'
     let st_path = empty(di_book.path) ? '' : '(' . di_book.path . ')'
-    let di_line.word = join([di_book.name, st_path])
+    let di_line.word = join([st_type, di_book.name, st_path], '')
 
     let di_line.action__path = di_book.path
     let di_line.action__text = di_book.path
 
     let st_kind = ''
-    if !empty(di_book.path)
-      if di_book.type == 'f'
-        let st_kind = 'jump_list'
-      endif
-      if di_book.type == 'd'
-        let st_kind = 'directory'
-      endif
+    if di_book.type == 'f'
+      let st_kind = 'jump_list'
+    endif
+    if di_book.type == 'd'
+      let st_kind = 'directory'
     endif
     let di_line.kind = st_kind
 
