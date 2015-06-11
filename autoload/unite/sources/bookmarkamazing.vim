@@ -25,9 +25,16 @@ function! unite#sources#bookmarkamazing#get_bookmark_list(st_file) "{{{
     " setting default value
     let di_book = s:di_func.get_default()
 
+    if empty(st_line)
+      call add(li_bookmarks, di_book)
+      continue
+    endif
+
     let [nu_level, st_title] = s:di_func.get_header(st_line)
     if nu_level != 0
       let di_book.name = st_line
+      call add(li_bookmarks, di_book)
+      continue
     endif
 
     let [st_name, st_path] = s:di_func.get_path(st_line)
@@ -35,10 +42,8 @@ function! unite#sources#bookmarkamazing#get_bookmark_list(st_file) "{{{
       let di_book.name = '[' . st_name . ']'
       let di_book.path = st_path
       let di_book.type = s:di_func.is_dir(st_path) ? 'd' : 'f'
-    endif
-
-    if empty(st_line) || !empty(di_book.name)
       call add(li_bookmarks, di_book)
+      continue
     endif
   endfor
 
@@ -56,7 +61,6 @@ endfunction "}}}
 function! s:di_func.get_header(st_line) "{{{
   let nu_level = len(matchstr(a:st_line, '^#\+\ze\s'))
   let st_title = matchstr(a:st_line, '\v^#+\s+\zs.+$')
-  let st_title = substitute(st_title, '\s{2}$', '', '')
   return [nu_level, st_title]
 endfunction "}}}
 function! s:di_func.get_path(st_line) "{{{
