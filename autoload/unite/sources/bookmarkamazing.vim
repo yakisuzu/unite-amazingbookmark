@@ -15,6 +15,7 @@ endfunction "}}}
 function! unite#sources#bookmarkamazing#get_bookmark_file_list(st_file) "{{{
   let st_path = a:st_file
   let st_path = (empty(st_path) ? 'default.md' : st_path)
+  let st_path = (st_path =~? '\.md$') ? st_path : st_path . '.md'
   let st_path = (st_path =~ '/$' ? st_path[: -2] : st_path)
   let st_path = g:unite_source_bookmarkamazing_directory . '/' . st_path
 
@@ -29,6 +30,10 @@ function! unite#sources#bookmarkamazing#get_bookmark_file_list(st_file) "{{{
   return [st_path]
 endfunction "}}}
 function! unite#sources#bookmarkamazing#get_bookmark_list(st_fullpath) "{{{
+  if empty(glob(a:st_fullpath))
+    return []
+  endif
+
   let li_bookmarks = []
   let li_headers_buffer = s:di_func.get_default_headers()
   for st_line in readfile(a:st_fullpath)
@@ -141,6 +146,16 @@ function! s:di_source.gather_candidates(args, context) "{{{
   endfor
 
   return li_candidates
+endfunction "}}}
+
+function! unite#sources#bookmarkamazing#get_bookmark_file_complete_list(ArgLead, CmdLine, CursorPos) "{{{
+  return uniq(['*' , 'default.md'] + map(split(glob(
+        \ g:unite_source_bookmarkamazing_directory . '/' . a:ArgLead . '*.md'), '\n'),
+        \ "fnamemodify(v:val, ':t')"))
+endfunction  "}}}
+
+function! s:di_source.complete(args, context, arglead, cmdline, cursorpos) "{{{
+  return unite#sources#bookmarkamazing#get_bookmark_file_complete_list(a:arglead, a:cmdline, a:cursorpos)
 endfunction "}}}
 
 let &cpo = s:save_cpo
