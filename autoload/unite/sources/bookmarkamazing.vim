@@ -38,31 +38,24 @@ function! unite#sources#bookmarkamazing#get_bookmark_list(st_fullpath) "{{{
   let li_headers_buffer = s:di_func.get_default_headers()
   for st_line in readfile(a:st_fullpath)
     " setting default value
-    let di_book = s:di_func.get_default()
-
-    let [nu_level, st_title] = s:di_func.get_title(st_line)
-    if nu_level != -1
-      let li_headers_buffer[nu_level] = st_title
-      let di_book.name = st_line
-
-      let di_book.headers = copy(li_headers_buffer)
-      call add(li_bookmarks, di_book)
-      continue
-    endif
+    let di_book = s:get_bookmark(st_line)
 
     if empty(st_line)
-
       let di_book.headers = copy(li_headers_buffer)
       call add(li_bookmarks, di_book)
       continue
     endif
 
-    let [st_name, st_path] = s:di_func.get_path(st_line)
-    if !empty(st_path)
-      let di_book.name = '[' . st_name . ']'
-      let di_book.path = st_path
-      let di_book.type = s:di_func.is_dir(st_path) ? 'd' : 'f'
+    call di_book.get_title()
+    if di_book.is_finish
+      let li_headers_buffer[di_book.level] = di_book.title
+      let di_book.headers = copy(li_headers_buffer)
+      call add(li_bookmarks, di_book)
+      continue
+    endif
 
+    call di_book.get_path()
+    if di_book.is_finish
       let di_book.headers = copy(li_headers_buffer)
       call add(li_bookmarks, di_book)
       continue
@@ -72,33 +65,48 @@ function! unite#sources#bookmarkamazing#get_bookmark_list(st_fullpath) "{{{
   return li_bookmarks
 endfunction "}}}
 
-let s:di_func = {}
-function! s:di_func.get_default() "{{{
+function! s:get_bookmark(st_line) "{{{
   let di = {}
+  let di.line = a:st_line
   let di.name = ''
   let di.path = ''
   let di.type = ''
+  let di.is_finish = 0 " false
+
+  let di.level = ''
+  let di.title = ''
+
   let di.headers = []
+
+  function! di.get_title() "{{{
+    let self.level = len(matchstr(self.line, '^#\+\ze\s')) - 1
+    let self.is_finish = (self.level != -1)
+
+    if self.is_finish
+      let self.title = matchstr(self.line, '\v^#+\s+\zs.+$')
+      let self.name = self.line
+    endif
+  endfunction "}}}
+
+  function! di.get_path() "{{{
+    let self.path = matchstr(self.line, '^\[.\+\](\zs.\+\ze)')
+    let self.is_finish = !empty(self.path)
+
+    if self.is_finish
+      let self.name = '[' . matchstr(self.line, '^\[\zs.\+\ze\](') . ']'
+      let self.type = (self.path =~? '\v(\\|\/)$') ? 'd' : 'f'
+    endif
+  endfunction "}}}
+
   return di
 endfunction "}}}
+
+let s:di_func = {}
 function! s:di_func.get_default_headers() "{{{
   return map(s:di_func.get_title_range(), '"undefined"')
 endfunction "}}}
 function! s:di_func.get_title_range() "{{{
   return range(0, 5)
-endfunction "}}}
-function! s:di_func.get_title(st_line) "{{{
-  let nu_level = len(matchstr(a:st_line, '^#\+\ze\s')) - 1
-  let st_title = matchstr(a:st_line, '\v^#+\s+\zs.+$')
-  return [nu_level, st_title]
-endfunction "}}}
-function! s:di_func.get_path(st_line) "{{{
-  let st_name = matchstr(a:st_line, '^\[\zs.\+\ze\](')
-  let st_path = matchstr(a:st_line, '^\[.\+\](\zs.\+\ze)')
-  return [st_name, st_path]
-endfunction "}}}
-function! s:di_func.is_dir(st_line) "{{{
-  return a:st_line =~? '\v(\\|\/)$'
 endfunction "}}}
 function! s:di_func.is_skip(li_header, li_params) "{{{
   for nu_idx in s:di_func.get_title_range()
