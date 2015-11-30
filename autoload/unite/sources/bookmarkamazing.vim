@@ -156,14 +156,18 @@ function! s:di_source.gather_candidates(args, context) "{{{
   return li_candidates
 endfunction "}}}
 
-function! unite#sources#bookmarkamazing#get_bookmark_file_complete_list(ArgLead, CmdLine, CursorPos) "{{{
-  return uniq(['*' , 'default.md'] + map(split(glob(
+function! unite#sources#bookmarkamazing#get_bookmark_file_complete_list(ArgLead, CmdLine, CursorPos, li_ignore) "{{{
+  let li_default = empty(a:ArgLead) ? ['*', 'default.md'] : []
+  let li_file = uniq(li_default + map(split(glob(
         \ g:unite_source_bookmarkamazing_directory . '/' . a:ArgLead . '*.md'), '\n'),
         \ "fnamemodify(v:val, ':t')"))
-endfunction  "}}}
+
+  let st_ignore = empty(a:li_ignore) ? '1' : join(map(a:li_ignore, "'v:val != \"' . v:val . '\"'"), ' || ')
+  return filter(li_file, st_ignore)
+endfunction "}}}
 
 function! s:di_source.complete(args, context, arglead, cmdline, cursorpos) "{{{
-  return unite#sources#bookmarkamazing#get_bookmark_file_complete_list(a:arglead, a:cmdline, a:cursorpos)
+  return unite#sources#bookmarkamazing#get_bookmark_file_complete_list(a:arglead, a:cmdline, a:cursorpos, [])
 endfunction "}}}
 
 let &cpo = s:save_cpo

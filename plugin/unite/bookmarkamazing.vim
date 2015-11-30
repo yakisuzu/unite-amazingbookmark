@@ -10,9 +10,7 @@ command! -nargs=? -complete=customlist,s:unite_bookmarkamazing_comp
       \ UniteBookmarkAmazingAdd call s:unite_bookmarkamazing_edit(<q-args>)
 
 function! s:unite_bookmarkamazing_comp(A,L,P) "{{{
-  return filter(unite#sources#bookmarkamazing#get_bookmark_file_complete_list(a:A, a:L, a:P), "
-        \ v:val != '*'
-        \ ")
+  return unite#sources#bookmarkamazing#get_bookmark_file_complete_list(a:A, a:L, a:P, ['*'])
 endfunction "}}}
 
 function! s:unite_bookmarkamazing_edit(st_arg) "{{{
@@ -22,7 +20,7 @@ function! s:unite_bookmarkamazing_edit(st_arg) "{{{
   if empty(glob(st_path))
     echom 'file not found ' . st_path
   endif
-  silent exe join(['tabe', st_path])
+  silent exe join(['sp', st_path])
 endfunction "}}}
 
 let &cpo = s:save_cpo
