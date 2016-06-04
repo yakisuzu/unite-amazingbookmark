@@ -20,6 +20,8 @@ function! s:unite_bookmarkamazing_edit(st_arg) "{{{
   if empty(glob(st_path))
     echom 'file not found ' . st_path
   endif
+
+  call unite#sources#bookmarkamazing#make_directory()
   silent exe join(['sp', st_path])
 endfunction "}}}
 

@@ -12,6 +12,13 @@ function! unite#sources#bookmarkamazing#define() "{{{
   return s:di_source
 endfunction "}}}
 
+function! unite#sources#bookmarkamazing#make_directory() "{{{
+  if !isdirectory(g:unite_source_bookmarkamazing_directory)
+        \ && !unite#util#is_sudo()
+    call mkdir(g:unite_source_bookmarkamazing_directory, 'p')
+  endif
+endfunction "}}}
+
 function! unite#sources#bookmarkamazing#get_bookmark_file_list(st_file) "{{{
   let st_path = a:st_file
   let st_path = (empty(st_path) ? 'default.md' : st_path)
