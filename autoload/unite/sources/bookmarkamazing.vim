@@ -1,24 +1,26 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:di_source = {
-      \ 'name' : 'bookmarkamazing',
-      \ }
 
+" ------------------------------
+" init
+" ------------------------------
 call unite#util#set_default('g:unite_source_bookmarkamazing_directory',
       \ unite#get_data_directory() . '/bookmarkamazing')
 
+
+" ------------------------------
+" public
+" ------------------------------
 function! unite#sources#bookmarkamazing#define() "{{{
   return s:di_source
 endfunction "}}}
-
 function! unite#sources#bookmarkamazing#make_directory() "{{{
   if !isdirectory(g:unite_source_bookmarkamazing_directory)
         \ && !unite#util#is_sudo()
     call mkdir(g:unite_source_bookmarkamazing_directory, 'p')
   endif
 endfunction "}}}
-
 function! unite#sources#bookmarkamazing#get_bookmark_file_list(st_file) "{{{
   let st_path = a:st_file
   let st_path = (empty(st_path) ? 'default.md' : st_path)
@@ -71,7 +73,20 @@ function! unite#sources#bookmarkamazing#get_bookmark_list(st_fullpath) "{{{
 
   return li_bookmarks
 endfunction "}}}
+function! unite#sources#bookmarkamazing#get_bookmark_file_complete_list(ArgLead, CmdLine, CursorPos, li_ignore) "{{{
+  let li_default = empty(a:ArgLead) ? ['*', 'default.md'] : []
+  let li_file = uniq(li_default + map(split(glob(
+        \ g:unite_source_bookmarkamazing_directory . '/' . a:ArgLead . '*.md'), '\n'),
+        \ "fnamemodify(v:val, ':t')"))
 
+  let st_ignore = empty(a:li_ignore) ? '1' : join(map(a:li_ignore, "'v:val != \"' . v:val . '\"'"), ' || ')
+  return filter(li_file, st_ignore)
+endfunction "}}}
+
+
+" ------------------------------
+" private function
+" ------------------------------
 function! s:get_bookmark(st_line) "{{{
   let di = {}
   let di.line = a:st_line
@@ -108,25 +123,13 @@ function! s:get_bookmark(st_line) "{{{
   return di
 endfunction "}}}
 
-let s:di_func = {}
-function! s:di_func.get_default_headers() "{{{
-  return map(s:di_func.get_title_range(), '"undefined"')
-endfunction "}}}
-function! s:di_func.get_title_range() "{{{
-  return range(0, 5)
-endfunction "}}}
-function! s:di_func.is_skip(li_header, li_params) "{{{
-  for nu_idx in s:di_func.get_title_range()
-    if len(a:li_params) == nu_idx
-      return 0
-    endif
-    if a:li_header[nu_idx] != a:li_params[nu_idx]
-      return 1
-    endif
-  endfor
-  return 0
-endfunction "}}}
 
+" ------------------------------
+" private variable
+" ------------------------------
+let s:di_source = {
+      \ 'name' : 'bookmarkamazing',
+      \ }
 function! s:di_source.gather_candidates(args, context) "{{{
   let li_params = a:args[1:]
 
@@ -162,20 +165,29 @@ function! s:di_source.gather_candidates(args, context) "{{{
 
   return li_candidates
 endfunction "}}}
-
-function! unite#sources#bookmarkamazing#get_bookmark_file_complete_list(ArgLead, CmdLine, CursorPos, li_ignore) "{{{
-  let li_default = empty(a:ArgLead) ? ['*', 'default.md'] : []
-  let li_file = uniq(li_default + map(split(glob(
-        \ g:unite_source_bookmarkamazing_directory . '/' . a:ArgLead . '*.md'), '\n'),
-        \ "fnamemodify(v:val, ':t')"))
-
-  let st_ignore = empty(a:li_ignore) ? '1' : join(map(a:li_ignore, "'v:val != \"' . v:val . '\"'"), ' || ')
-  return filter(li_file, st_ignore)
-endfunction "}}}
-
 function! s:di_source.complete(args, context, arglead, cmdline, cursorpos) "{{{
   return unite#sources#bookmarkamazing#get_bookmark_file_complete_list(a:arglead, a:cmdline, a:cursorpos, [])
 endfunction "}}}
+
+let s:di_func = {}
+function! s:di_func.get_default_headers() "{{{
+  return map(s:di_func.get_title_range(), '"undefined"')
+endfunction "}}}
+function! s:di_func.get_title_range() "{{{
+  return range(0, 5)
+endfunction "}}}
+function! s:di_func.is_skip(li_header, li_params) "{{{
+  for nu_idx in s:di_func.get_title_range()
+    if len(a:li_params) == nu_idx
+      return 0
+    endif
+    if a:li_header[nu_idx] != a:li_params[nu_idx]
+      return 1
+    endif
+  endfor
+  return 0
+endfunction "}}}
+
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
