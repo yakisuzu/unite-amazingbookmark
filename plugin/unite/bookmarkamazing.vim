@@ -10,7 +10,9 @@ call unite#sources#bookmarkamazing#make_directory()
 "TODO custom korosu
 "call unite#custom#action('file', 'bookmark', s:file_bookmark_action)
 "call unite#custom#action('buffer', 'bookmark', s:buffer_bookmark_action)
-delcommand UniteBookmarkAdd
+if exists(':UniteBookmarkAdd')
+  delcommand UniteBookmarkAdd
+endif
 
 
 " ------------------------------
